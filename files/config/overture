@@ -1,0 +1,31 @@
+
+config overture
+	option BindAddress ':49153'
+	list PrimaryDNS 'cfg02321b'
+	list AlternativeDNS 'cfg03321b'
+	option OnlyPrimaryDNS 'false'
+	option IPv6UseAlternativeDNS 'false'
+	option WhenPrimaryDNSAnswerNoneUse 'AlternativeDNS'
+	option IPNetworkFilePrimary '/etc/overture/ip_network_primary_sample'
+	option IPNetworkFileAlternative '/etc/overture/ip_network_alternative_sample'
+	option DomainFilePrimary '/etc/overture/domain_primary_sample'
+	option DomainFileAlternative '/etc/overture/domain_alternative_sample'
+	option DomainFileMatcher 'regex-list'
+	option HostsFile '/etc/overture/hosts_sample'
+	option MinimumTTL '0'
+	option DomainTTLFile '/etc/overture/domain_ttl_sample'
+	option CacheSize '0'
+	list RejectQType '255'
+
+config upstreamdns
+	option Name 'OpenDNS'
+	option Address '208.67.222.222:443'
+	option Protocol 'tcp'
+	option Timeout '6'
+
+config upstreamdns
+	option Name 'Google Public DNS'
+	option Address '8.8.8.8:853'
+	option Protocol 'tcp-tls'
+	option Timeout '6'
+
