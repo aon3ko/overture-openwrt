@@ -14,7 +14,7 @@ PKG_HASH:=d2a7976811cec3f39ccdd65e264415f072e02d1cfdbc674d7494be29faab8b38
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 
-GO_PKG:=overture
+GO_PKG:=github.com/shawn1m/overture
 GO_PKG_LDFLAGS:=-s -w
 GO_PKG_LDFLAGS_X:=main.version=$(PKG_VERSION)
 
@@ -46,4 +46,5 @@ define Package/overture/install
 	$(INSTALL_CONF) ./files/overture/* $(1)/etc/overture/
 endef
 
+$(eval $(call GoBinPackage,overture))
 $(eval $(call BuildPackage,overture))
