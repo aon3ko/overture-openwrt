@@ -53,9 +53,21 @@ generate_json() {
 	echo $(json_dump) > /var/run/overture/overture-$1.json
 }
 
-start_overture() {
-	procd_open_instance $1
-	procd_set_param command overture -c /var/run/overture/overture-$1.json
+overture_get_options() {
+	if [ $(config_get $1 VerboseMode) == "true" ]; then
+		echo -v
+	fi
+	if [ $(config_get $1 LogToFile) != "" ]; then
+		echo -l $(config_get $1 LogToFile)
+	fi
+	if [ $(config_get $1 CoreNumber) != "" ]; then
+		echo -p $(config_get $1 CoreNumber)
+	fi
+}
+
+start_instance() {
+	procd_open_instance overture-$1
+	procd_set_param command overture -c /var/run/overture/overture-$1.json $(overture_get_options $1)
 	procd_set_param pidfile /var/run/overture/overture-$1.pid
 	procd_set_param respawn
 	procd_set_param stdout 1
@@ -69,7 +81,7 @@ start_service() {
 	mkdir /var/run/overture
 	config_load overture
 	config_foreach generate_json overture
-	config_foreach start_overture overture
+	config_foreach start_instance overture
 }
 
 stop_service() {
