@@ -48,8 +48,10 @@ generate_json() {
 			json_close_object
 		done
 	json_close_array
-	json_add_boolean OnlyPrimaryDNS $(config_get_bool $1 OnlyPrimaryDNS)
-	json_add_boolean IPv6UseAlternativeDNS $(config_get_bool $1 IPv6UseAlternativeDNS)
+	[ $(config_get $1 OnlyPrimaryDNS) == "true" ] && _tmp=1 || _tmp=0
+	json_add_boolean OnlyPrimaryDNS $_tmp
+	[ $(config_get $1 IPv6UseAlternativeDNS) == "true" ] && _tmp=1 || _tmp=0
+	json_add_boolean IPv6UseAlternativeDNS $_tmp
 	json_add_string WhenPrimaryDNSAnswerNoneUse $(config_get $1 WhenPrimaryDNSAnswerNoneUse)
 	json_add_object IPNetworkFile
 		json_add_string Primary $(config_get $1 IPNetworkFilePrimary)
