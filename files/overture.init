@@ -4,49 +4,30 @@ USE_PROCD=1
 
 START=99
 
-# config_get_cfgid <TYPE>
-config_get_cfgid() {
-	local cfgid filteredcfgid
-	for cfgid in $CONFIG_SECTIONS; do
-		if [ $(config_get $cfgid TYPE) == $1 ]; then
-			filteredcfgid="$filteredcfgid $cfgid"
-		fi
-	done
-	echo $filteredcfgid
+add_dns_object() {
+	json_add_object
+	json_add_string Name $(config_get $1 Name)
+	json_add_string Address $(config_get $1 Address)
+	json_add_string Protocol $(config_get $1 Protocol)
+	json_add_string SOCKS5Address $(config_get $1 SOCKS5Address)
+	json_add_int Timeout $(config_get $1 Timeout)
+	json_add_object EDNSClientSubnet
+	json_close_object
+	json_close_object
 }
 
 # generate_json <cfgid>
 # this func is for overture instance
 generate_json() {
-	local cfgid array
+	local _tmp
 	json_init
 	json_add_string BindAddress $(config_get $1 BindAddress)
 	json_add_string DebugHTTPAddress $(config_get $1 DebugHTTPAddress)
 	json_add_array PrimaryDNS
-		for cfgid in $(config_get $1 PrimaryDNS); do
-			json_add_object
-			json_add_string Name $(config_get $cfgid Name)
-			json_add_string Address $(config_get $cfgid Address)
-			json_add_string Protocol $(config_get $cfgid Protocol)
-			json_add_string SOCKS5Address $(config_get $cfgid SOCKS5Address)
-			json_add_int Timeout $(config_get $cfgid Timeout)
-			json_add_object EDNSClientSubnet
-			json_close_object
-			json_close_object
-		done
+		config_list_foreach $1 PrimaryDNS add_dns_object
 	json_close_array
 	json_add_array AlternativeDNS
-		for cfgid in $(config_get $1 AlternativeDNS); do
-			json_add_object
-			json_add_string Name $(config_get $cfgid Name)
-			json_add_string Address $(config_get $cfgid Address)
-			json_add_string Protocol $(config_get $cfgid Protocol)
-			json_add_string SOCKS5Address $(config_get $cfgid SOCKS5Address)
-			json_add_int Timeout $(config_get $cfgid Timeout)
-			json_add_object EDNSClientSubnet
-			json_close_object
-			json_close_object
-		done
+		config_list_foreach $1 AlternativeDNS add_dns_object
 	json_close_array
 	[ $(config_get $1 OnlyPrimaryDNS) == "true" ] && _tmp=1 || _tmp=0
 	json_add_boolean OnlyPrimaryDNS $_tmp
@@ -67,9 +48,7 @@ generate_json() {
 	json_add_string DomainTTLFile $(config_get $1 DomainTTLFile)
 	json_add_int CacheSize $(config_get $1 CacheSize)
 	json_add_array RejectQType
-		for array in $(config_get $1 RejectQType); do
-			json_add_int "" $array
-		done
+		config_list_foreach $1 RejectQType "json_add_int ''"
 	json_close_array
 	echo $(json_dump) > /var/run/overture/overture-$1.json
 }
@@ -84,20 +63,13 @@ start_overture() {
 	procd_close_instance
 }
 
-for_each_server() {
-	local cfgid
-	for cfgid in $(config_get_cfgid overture); do
-		generate_json $cfgid
-		start_overture $cfgid
-	done
-}
-
 # ===== Begin of PROCD part ===== #
 
 start_service() {
 	mkdir /var/run/overture
 	config_load overture
-	for_each_server
+	config_foreach generate_json overture
+	config_foreach start_overture overture
 }
 
 stop_service() {
