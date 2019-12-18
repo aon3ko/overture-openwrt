@@ -50,7 +50,8 @@ generate_json() {
 	json_add_array RejectQType
 		config_list_foreach $1 RejectQType "json_add_int ''"
 	json_close_array
-	echo $(json_dump) > /var/run/overture/overture-$1.json
+
+	json_dump > /var/run/overture/overture-$1.json
 }
 
 overture_get_options() {
