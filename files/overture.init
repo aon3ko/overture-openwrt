@@ -33,6 +33,10 @@ generate_json() {
 	json_add_boolean OnlyPrimaryDNS $_tmp
 	[ $(config_get $1 IPv6UseAlternativeDNS) == "true" ] && _tmp=1 || _tmp=0
 	json_add_boolean IPv6UseAlternativeDNS $_tmp
+	[ $(config_get $1 AlternativeDNSConcurrent) == "true" ] && _tmp=1 || _tmp=0
+	json_add_boolean AlternativeDNSConcurrent $_tmp
+	json_add_int PoolIdleTimeout $(config_get $1 PoolIdleTimeout)
+	json_add_int PoolMaxCapacity $(config_get $1 PoolMaxCapacity)
 	json_add_string WhenPrimaryDNSAnswerNoneUse $(config_get $1 WhenPrimaryDNSAnswerNoneUse)
 	json_add_object IPNetworkFile
 		json_add_string Primary $(config_get $1 IPNetworkFilePrimary)
@@ -43,7 +47,10 @@ generate_json() {
 		json_add_string Alternative $(config_get $1 DomainFileAlternative)
 		json_add_string Matcher $(config_get $1 DomainFileMatcher)
 	json_close_object
-	json_add_string HostsFile $(config_get $1 HostsFile)
+	json_add_object HostsFile
+		json_add_string HostsFile $(config_get $1 HostsFile)
+		json_add_string HostsFileFinder $(config_get $1 HostsFile)
+	json_close_object
 	json_add_int MinimumTTL $(config_get $1 MinimumTTL)
 	json_add_string DomainTTLFile $(config_get $1 DomainTTLFile)
 	json_add_int CacheSize $(config_get $1 CacheSize)
