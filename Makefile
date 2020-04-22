@@ -13,6 +13,7 @@ PKG_HASH:=916ddbc4e8ee3cd008e281ba768c1502ad7b3ad71073f5e587b187e371eedd2b
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
+PKG_USE_MIPS16:=0
 
 GO_PKG:=github.com/shawn1m/overture
 GO_PKG_LDFLAGS:=-s -w
