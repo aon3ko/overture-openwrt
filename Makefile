@@ -31,6 +31,7 @@ define Package/overture
 endef
 
 define Package/overture/description
+  Overture is a DNS server/forwarder/dispatcher written in Go.
   Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the first step of surfing the Internet.
 endef
 
