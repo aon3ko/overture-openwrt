@@ -17,7 +17,7 @@ add_dns_object() {
 }
 
 generate_json() {
-	local _tmp
+	local okay
 	json_init
 	json_add_string BindAddress $(config_get $1 BindAddress)
 	json_add_string DebugHTTPAddress $(config_get $1 DebugHTTPAddress)
@@ -27,12 +27,9 @@ generate_json() {
 	json_add_array AlternativeDNS
 		config_list_foreach $1 AlternativeDNS add_dns_object
 	json_close_array
-	[ "$(config_get $1 OnlyPrimaryDNS)" == "true" ] && _tmp=1 || _tmp=0
-	json_add_boolean OnlyPrimaryDNS $_tmp
-	[ "$(config_get $1 IPv6UseAlternativeDNS)" == "true" ] && _tmp=1 || _tmp=0
-	json_add_boolean IPv6UseAlternativeDNS $_tmp
-	[ "$(config_get $1 AlternativeDNSConcurrent)" == "true" ] && _tmp=1 || _tmp=0
-	json_add_boolean AlternativeDNSConcurrent $_tmp
+	config_get_bool okay $1 OnlyPrimaryDNS; json_add_boolean OnlyPrimaryDNS $okay
+	config_get_bool okay $1 IPv6UseAlternativeDNS; json_add_boolean IPv6UseAlternativeDNS $okay
+	config_get_bool okay $1 AlternativeDNSConcurrent; json_add_boolean AlternativeDNSConcurrent $okay
 	json_add_int PoolIdleTimeout $(config_get $1 PoolIdleTimeout)
 	json_add_int PoolMaxCapacity $(config_get $1 PoolMaxCapacity)
 	json_add_string WhenPrimaryDNSAnswerNoneUse $(config_get $1 WhenPrimaryDNSAnswerNoneUse)
