@@ -43,7 +43,7 @@ define Package/overture/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/overture.init $(1)/etc/init.d/overture
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./files/config/overture $(1)/etc/config/overture
+	$(INSTALL_CONF) ./files/overture.config $(1)/etc/config/overture
 	$(INSTALL_DIR) $(1)/etc/overture
 	$(INSTALL_CONF) ./files/overture/* $(1)/etc/overture/
 endef
