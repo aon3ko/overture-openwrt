@@ -16,8 +16,6 @@ add_dns_object() {
 	json_close_object
 }
 
-# generate_json <cfgid>
-# this func is for overture instance
 generate_json() {
 	local _tmp
 	json_init
@@ -29,11 +27,11 @@ generate_json() {
 	json_add_array AlternativeDNS
 		config_list_foreach $1 AlternativeDNS add_dns_object
 	json_close_array
-	[ $(config_get $1 OnlyPrimaryDNS) == "true" ] && _tmp=1 || _tmp=0
+	[ "$(config_get $1 OnlyPrimaryDNS)" == "true" ] && _tmp=1 || _tmp=0
 	json_add_boolean OnlyPrimaryDNS $_tmp
-	[ $(config_get $1 IPv6UseAlternativeDNS) == "true" ] && _tmp=1 || _tmp=0
+	[ "$(config_get $1 IPv6UseAlternativeDNS)" == "true" ] && _tmp=1 || _tmp=0
 	json_add_boolean IPv6UseAlternativeDNS $_tmp
-	[ $(config_get $1 AlternativeDNSConcurrent) == "true" ] && _tmp=1 || _tmp=0
+	[ "$(config_get $1 AlternativeDNSConcurrent)" == "true" ] && _tmp=1 || _tmp=0
 	json_add_boolean AlternativeDNSConcurrent $_tmp
 	json_add_int PoolIdleTimeout $(config_get $1 PoolIdleTimeout)
 	json_add_int PoolMaxCapacity $(config_get $1 PoolMaxCapacity)
@@ -62,20 +60,25 @@ generate_json() {
 }
 
 overture_parameters() {
-	if [ $(config_get $1 VerboseMode) == "true" ]; then
-		echo -v
-	fi
-	if [ $(config_get $1 LogToFile) != "" ]; then
-		echo -l $(config_get $1 LogToFile)
-	fi
-	if [ $(config_get $1 CoreNumber) != "" ]; then
-		echo -p $(config_get $1 CoreNumber)
-	fi
+	[ "$(config_get $1 VerboseMode)" == "1" ] && echo -v
+	[ "$(config_get $1 LogToFile)" != "" ] && echo -l $(config_get $1 LogToFile)
+	[ "$(config_get $1 CoreNumber)" != "" ] && echo -p $(config_get $1 CoreNumber)
 }
 
-start_instance() {
+overture_start() {
+	[ "$(config_get $1 Disabled)" == "1" ] && return
+
+	local json_file
+
+	if [ "$(config_get $1 json)" != "" ]; then
+		json_file="$(config_get $1 json)"
+	else
+		generate_json $1
+		json_file="/var/run/overture/overture-$1.json"
+	fi
+
 	procd_open_instance overture-$1
-	procd_set_param command overture -c /var/run/overture/overture-$1.json $(overture_parameters $1)
+	procd_set_param command overture -c $json_file $(overture_parameters $1)
 	procd_set_param pidfile /var/run/overture/overture-$1.pid
 	procd_set_param respawn
 	procd_set_param stdout 1
@@ -88,8 +91,7 @@ start_instance() {
 start_service() {
 	mkdir /var/run/overture
 	config_load overture
-	config_foreach generate_json overture
-	config_foreach start_instance overture
+	config_foreach overture_start overture
 }
 
 stop_service() {
