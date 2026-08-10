@@ -1,3 +1,5 @@
+
+
 overture for OpenWrt
 =====
 
@@ -18,4 +20,4 @@ for content in json array, use `uci add_list`
 
 configure by LuCI
 ----------
-Install luci-app-overture.
+Install the `luci-app-overture` package to configure overture via the LuCI web interface.
