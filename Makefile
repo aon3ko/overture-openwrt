@@ -8,7 +8,7 @@ PKG_LICENSE_FILES:=LICENSE.md
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 #PKG_SOURCE_URL:=https://github.com/shawn1m/overture/archive/v$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/shawn1m/overture/tar.gz/v$(PKG_VERSION)?
+PKG_SOURCE_URL:=https://files.dawn.moe/Mirrors/Overture/
 PKG_HASH:=962163826b963ac89de03520de93ba5cf9a81fdf0e144091c4c79945eb4d7e70
 
 PKG_BUILD_DEPENDS:=golang/host
