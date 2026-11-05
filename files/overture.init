@@ -6,49 +6,58 @@ START=99
 
 add_dns_object() {
 	json_add_object
-	json_add_string Name $(config_get $1 Name)
-	json_add_string Address $(config_get $1 Address)
-	json_add_string Protocol $(config_get $1 Protocol)
-	json_add_string SOCKS5Address $(config_get $1 SOCKS5Address)
-	json_add_int Timeout $(config_get $1 Timeout)
+	json_add_string Name "$(config_get $1 Name)"
+	json_add_string Address "$(config_get $1 Address)"
+	json_add_string Protocol "$(config_get $1 Protocol)"
+	json_add_string SOCKS5Address "$(config_get $1 SOCKS5Address)"
+	json_add_int Timeout "$(config_get $1 Timeout)"
 	json_add_object EDNSClientSubnet
+		json_add_string Policy "$(config_get $1 EDNSClientSubnetPolicy)"
+		json_add_string ExternalIP "$(config_get $1 EDNSClientSubnetExternalIP)"
+		json_add_boolean NoCookie $(get_bool "$(config_get $1 EDNSClientSubnetNoCookie)")
+	json_close_object
+	json_add_object TCPPoolConfig
+		json_add_boolean Enable $(get_bool "$(config_get $1 TCPPoolConfigEnable)")
+		json_add_int InitialCapacity "$(config_get $1 TCPPoolConfigInitialCapacity)"
+		json_add_int MaxCapacity "$(config_get $1 TCPPoolConfigMaxCapacity)"
+		json_add_int IdleTimeout "$(config_get $1 TCPPoolConfigIdleTimeout)"
 	json_close_object
 	json_close_object
 }
 
 generate_json() {
-	local okay
 	json_init
-	json_add_string BindAddress $(config_get $1 BindAddress)
-	json_add_string DebugHTTPAddress $(config_get $1 DebugHTTPAddress)
+	json_add_string BindAddress "$(config_get $1 BindAddress)"
+	json_add_string DebugHTTPAddress "$(config_get $1 DebugHTTPAddress)"
+	json_add_boolean DohEnabled $(get_bool "$(config_get $1 DohEnabled)")
 	json_add_array PrimaryDNS
 		config_list_foreach $1 PrimaryDNS add_dns_object
 	json_close_array
 	json_add_array AlternativeDNS
 		config_list_foreach $1 AlternativeDNS add_dns_object
 	json_close_array
-	config_get_bool okay $1 OnlyPrimaryDNS; json_add_boolean OnlyPrimaryDNS $okay
-	config_get_bool okay $1 IPv6UseAlternativeDNS; json_add_boolean IPv6UseAlternativeDNS $okay
-	config_get_bool okay $1 AlternativeDNSConcurrent; json_add_boolean AlternativeDNSConcurrent $okay
-	json_add_int PoolIdleTimeout $(config_get $1 PoolIdleTimeout)
-	json_add_int PoolMaxCapacity $(config_get $1 PoolMaxCapacity)
-	json_add_string WhenPrimaryDNSAnswerNoneUse $(config_get $1 WhenPrimaryDNSAnswerNoneUse)
+	json_add_boolean OnlyPrimaryDNS $(get_bool "$(config_get $1 OnlyPrimaryDNS)")
+	json_add_boolean IPv6UseAlternativeDNS $(get_bool "$(config_get $1 IPv6UseAlternativeDNS)")
+	json_add_boolean AlternativeDNSConcurrent $(get_bool "$(config_get $1 AlternativeDNSConcurrent)")
+	json_add_string WhenPrimaryDNSAnswerNoneUse "$(config_get $1 WhenPrimaryDNSAnswerNoneUse)"
 	json_add_object IPNetworkFile
-		json_add_string Primary $(config_get $1 IPNetworkFilePrimary)
-		json_add_string Alternative $(config_get $1 IPNetworkFileAlternative)
+		json_add_string Primary "$(config_get $1 IPNetworkFilePrimary)"
+		json_add_string Alternative "$(config_get $1 IPNetworkFileAlternative)"
 	json_close_object
 	json_add_object DomainFile
-		json_add_string Primary $(config_get $1 DomainFilePrimary)
-		json_add_string Alternative $(config_get $1 DomainFileAlternative)
-		json_add_string Matcher $(config_get $1 DomainFileMatcher)
+		json_add_string Primary "$(config_get $1 DomainFilePrimary)"
+		json_add_string Alternative "$(config_get $1 DomainFileAlternative)"
+		json_add_string Matcher "$(config_get $1 DomainFileMatcher)"
 	json_close_object
 	json_add_object HostsFile
-		json_add_string HostsFile $(config_get $1 HostsFile)
-		json_add_string HostsFileFinder $(config_get $1 HostsFile)
+		json_add_string HostsFile "$(config_get $1 HostsFile)"
+		json_add_string Finder "$(config_get $1 HostsFileFinder)"
 	json_close_object
-	json_add_int MinimumTTL $(config_get $1 MinimumTTL)
-	json_add_string DomainTTLFile $(config_get $1 DomainTTLFile)
-	json_add_int CacheSize $(config_get $1 CacheSize)
+	json_add_int MinimumTTL "$(config_get $1 MinimumTTL)"
+	json_add_string DomainTTLFile "$(config_get $1 DomainTTLFile)"
+	json_add_int CacheSize "$(config_get $1 CacheSize)"
+	json_add_string CacheRedisUrl "$(config_get $1 CacheRedisUrl)"
+	json_add_int CacheRedisConnectionPoolSize "$(config_get $1 CacheRedisConnectionPoolSize)"
 	json_add_array RejectQType
 		config_list_foreach $1 RejectQType "json_add_int ''"
 	json_close_array
@@ -56,14 +65,14 @@ generate_json() {
 	json_dump > /var/run/overture/overture-$1.json
 }
 
-overture_parameters() {
-	[ "$(config_get $1 VerboseMode)" == "1" ] && echo -v
-	[ "$(config_get $1 LogToFile)" != "" ] && echo -l $(config_get $1 LogToFile)
-	[ "$(config_get $1 CoreNumber)" != "" ] && echo -p $(config_get $1 CoreNumber)
+overture_arguments() {
+	[ "$(get_bool "$(config_get $1 VerboseMode)")" == "1" ] && procd_append_param command -v
+	[ "$(config_get $1 LogToFile)" != "" ] && procd_append_param command -l "$(config_get $1 LogToFile)"
+	[ "$(config_get $1 CoreNumber)" != "" ] && procd_append_param command -p "$(config_get $1 CoreNumber)"
 }
 
 overture_start() {
-	[ "$(config_get $1 Disabled)" == "1" ] && return
+	[ "$(get_bool "$(config_get $1 Disabled)")" == "1" ] && return
 
 	local json_file
 
@@ -75,7 +84,8 @@ overture_start() {
 	fi
 
 	procd_open_instance overture-$1
-	procd_set_param command overture -c $json_file $(overture_parameters $1)
+	procd_set_param command overture -c "${json_file}"
+	overture_arguments $1
 	procd_set_param pidfile /var/run/overture/overture-$1.pid
 	procd_set_param respawn
 	procd_set_param stdout 1
@@ -86,7 +96,7 @@ overture_start() {
 # ===== Begin of PROCD part ===== #
 
 start_service() {
-	mkdir /var/run/overture
+	mkdir -p /var/run/overture
 	config_load overture
 	config_foreach overture_start overture
 }
