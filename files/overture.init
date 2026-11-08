@@ -6,7 +6,7 @@ START=99
 
 add_dns_object() {
 	json_add_object
-	json_add_string Name "$(config_get $1 Name)"
+	json_add_string Name "$1"
 	json_add_string Address "$(config_get $1 Address)"
 	json_add_string Protocol "$(config_get $1 Protocol)"
 	json_add_string SOCKS5Address "$(config_get $1 SOCKS5Address)"
