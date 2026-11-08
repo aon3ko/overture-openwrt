@@ -22,6 +22,8 @@ GO_PKG_LDFLAGS_X:=main.version=$(PKG_VERSION)
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
+GO_PKG_BUILD_VARS += GOFLAGS="-buildvcs=false"
+
 define Package/overture
   SECTION:=net
   CATEGORY:=Network
