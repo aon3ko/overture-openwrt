@@ -47,7 +47,12 @@ define Package/overture/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/overture.config $(1)/etc/config/overture
 	$(INSTALL_DIR) $(1)/etc/overture
-	$(INSTALL_CONF) ./files/overture/* $(1)/etc/overture/
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config.sample.yml $(1)/etc/overture/
+endef
+
+define Package/overture/conffiles
+/etc/config/overture
+/etc/overture
 endef
 
 $(eval $(call GoBinPackage,overture))
